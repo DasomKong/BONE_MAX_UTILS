@@ -1,0 +1,11 @@
+name "JHP utils"
+
+version 1.0
+
+copy JHP_startup.ms to $scripts\Startup
+copy menuCreate.py to $scripts\JHP
+copy changeFormatToUE4.py to $scripts\JHP
+copy UE4BoneMapper.py to $scripts\JHP
+copy defaultMapper.json to $scripts\JHP
+
+drop "JHP_startup.ms"
