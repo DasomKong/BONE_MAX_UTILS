@@ -1,7 +1,8 @@
+import MaxPlus
+import pymxs
+
 from pymxs import runtime as rt
 from pymxs import attime as at
-
-import MaxPlus
 
 from PySide2 import QtCore
 import PySide2.QtWidgets

@@ -1,7 +1,9 @@
 # UE4 BoneMapper
+import pymxs
+import MaxPlus
+
 from pymxs import runtime as rt
 
-import MaxPlus
 from PySide2.QtWidgets import (QApplication, QWidget, QComboBox, QLabel, QGroupBox,
 QGridLayout, QHBoxLayout, QVBoxLayout, QPushButton)
 from PySide2 import QtCore
