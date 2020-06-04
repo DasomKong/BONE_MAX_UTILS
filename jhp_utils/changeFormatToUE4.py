@@ -7,7 +7,9 @@ from pymxs import attime as at
 from PySide2 import QtCore
 import PySide2.QtWidgets
 from PySide2.QtWidgets import (QApplication, QWidget, QLineEdit,
-QGroupBox, QVBoxLayout, QPushButton)
+QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton, QCheckBox)
+
+defaultRootNodeName = "Bip001"
 
 class _GCProtector(object):
     widgets = []
@@ -39,7 +41,33 @@ class formatToUE4:
 			rt.messageBox("no bone name \"" + rootName + "\"")
 		
 	# with attime
-	def doChangeJobWithattime(self):
+	def doChangeJobWithattime(self,changeWindow):
+		# set animation range again
+		start = 0
+		end = 0
+		
+		if changeWindow.useManualCheckBox.isChecked():
+			s = changeWindow.rangeMin.text()
+			e = changeWindow.rangeMax.text()
+
+			if not s.isdecimal() or not e.isdecimal():
+				rt.messageBox("not numeric values in range!")
+				return
+				
+			start = int(s)
+			end = int(e)
+			
+		else:
+			c = self.rootNode.getmxsprop('position.controller')
+			
+			count = c.keys.count
+
+			start = c.keys[0].time
+			end = c.keys[count - 1].time
+			
+		rt.animationRange = rt.Interval(start, end)
+		
+		# set dummies
 		newRoot = rt.Dummy()
 		newRoot.name = self.rootNode.name
 		pelvisDum = rt.Dummy()
@@ -89,6 +117,9 @@ class formatChangerWindow(QWidget):
 	
 	changer = None
 	rootNameLine = None
+	rangeMin = None
+	rangeMax = None
+	useManualCheckBox = None
 	
 	def __init__(self, parent=None):
 		QWidget.__init__(self, parent)
@@ -101,16 +132,47 @@ class formatChangerWindow(QWidget):
 		
 		#self.rootNameLine = QLineEdit(self)
 		self.rootNameLine = self.lineEditWithFocus(self)
+		self.rootNameLine.setText(defaultRootNodeName)
 		self.rootNameLine.setPlaceholderText("type root node name")
+				
+		# anim range
+		self.useManualCheckBox = QCheckBox("S&etManual", self)
+		self.useManualCheckBox.stateChanged.connect(self.checkBoxStateChange)
 		
+		rangeBox = QGroupBox("AnimationRange", self)
+		rangeLayout = QHBoxLayout(rangeBox)
+		
+		self.rangeMin = self.lineEditWithFocus(self)
+		self.rangeMin.setText('0')
+		self.rangeMin.setPlaceholderText("min")
+		
+		self.rangeMax = self.lineEditWithFocus(self)
+		self.rangeMax.setText('100')
+		self.rangeMax.setPlaceholderText("max")
+
+		self.setRangeEditWritable(True)
+		
+		rangeLayout.addWidget(self.rangeMin)
+		rangeLayout.addWidget(self.rangeMax)
+		
+		# button
 		btn_ChangeFormat = QPushButton("&Change", self)
 		btn_ChangeFormat.clicked.connect(self.onExecuteChange)
 		
+		
 		mainLayout.addWidget(self.rootNameLine)
 		mainLayout.addWidget(btn_ChangeFormat)
+		mainLayout.addWidget(self.useManualCheckBox)
+		mainLayout.addWidget(rangeBox)
 		
 		self.setLayout(mainLayout)
 
+	def checkBoxStateChange(self):
+		self.setRangeEditWritable(not self.useManualCheckBox.isChecked())
+
+	def setRangeEditWritable(self, isOn):
+		self.rangeMin.setReadOnly(isOn)
+		self.rangeMax.setReadOnly(isOn)
 
 	def onExecuteChange(self):
 		self.changer.setRootNode(self.rootNameLine.text())
@@ -118,7 +180,7 @@ class formatChangerWindow(QWidget):
 		if self.changer.rootNode == None or self.changer.pelvisNode == None:
 			rt.messageBox("no bone selected in scene!")
 		else:
-			self.changer.doChangeJobWithattime()
+			self.changer.doChangeJobWithattime(self)
 	
 
 def openAnimFormatChangeForUE4():

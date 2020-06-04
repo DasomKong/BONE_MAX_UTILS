@@ -13,6 +13,8 @@ import json
 from collections import OrderedDict
 import math
 
+import os
+
 orderedKeys = [
         "Root",
         "Pelvis",
@@ -68,6 +70,10 @@ orderedKeys = [
         "Foot_R",
         "ball_r"
     ]
+
+
+
+defaultMapperFilePath = MaxPlus.PathManager.GetScriptsDir() + "\JHP\defaultMapper.json"
 
 class _GCProtector(object):
     widgets = []
@@ -156,6 +162,8 @@ class BoneMapperWindow(QWidget):
 		self.boneMapperFunc = UE4BoneMapper()
 		
 		self.createBoneMapperUI(orderedKeys)
+		
+		self.applyMapperData(defaultMapperFilePath)
 	
 	def findBonesFromSelection(self):
 		if rt.selection.count == 0:
@@ -271,18 +279,24 @@ class BoneMapperWindow(QWidget):
 	
 	def loadFile(self):
 		filePath = rt.getOpenFileName(caption="Open Mapper File", types="Json(*.json)|*.json")
+		
+		self.applyMapperData(filePath)
+
+	def applyMapperData(self, filePath):
 		# bone name -> mapperWidget set text
 		
-		load = None
+		if os.access(filePath, os.W_OK):
+			load = None
+			
+			with open(filePath, 'r') as json_data:
+				load= json.load(json_data)
 		
-		with open(filePath, 'r') as json_data:
-			load= json.load(json_data)
+			load_keys = load.keys()
 		
-		load_keys = load.keys()
-		
-		for i in range(len(load_keys)):
-			self.mapperWidgets.get(load_keys[i]).setSelectedName(load.get(load_keys[i]))
-
+			for i in range(len(load_keys)):
+				self.mapperWidgets.get(load_keys[i]).setSelectedName(load.get(load_keys[i]))
+		else:
+			rt.messageBox("there's no filePath name \"" + filePath + "\"")
 
 
 # ------------------------------ main max ------------------------------
@@ -297,4 +311,3 @@ def openBoneMapperWindow():
 	#mapperWindow.adjustSize()
 	
 	_GCProtector.widgets.append(mapperWindow)
-	
