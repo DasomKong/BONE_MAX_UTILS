@@ -10,6 +10,7 @@ from PySide2.QtWidgets import (QApplication, QWidget, QLineEdit,
 QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton, QCheckBox)
 
 defaultRootNodeName = "Bip001"
+toeNames = ["Bip001 L Toe0", "Bip001 R Toe0"]
 
 class _GCProtector(object):
     widgets = []
@@ -72,21 +73,52 @@ class formatToUE4:
 		newRoot.name = self.rootNode.name
 		pelvisDum = rt.Dummy()
 		pelvisDum.name = "pelvis"
+		
+		rootZCheck = changeWindow.IncludeRootZCheckBox.isChecked()
+		
+		lToe = None
+		rToe = None
+		
+		if rootZCheck:
+			lToe = rt.getNodeByName(toeNames[0])
+			rToe = rt.getNodeByName(toeNames[1])
 
+		RootZOffset = 0
+		p2rZOffset = 0
+		
 		with pymxs.animate(True):
 			for i in range(rt.animationRange.end + 1):
 				with at(i):
 					# root dum
-					pos = self.rootNode.position
-					pos.x = 0
-					pos.z = 0
-					newRoot.position = pos
-			
+					rtPos = self.rootNode.position
 					# pelvis dum
-					pos = self.pelvisNode.position
-					pos.y = 0
+					pelPos = self.pelvisNode.position
+					
+					if lToe != None and rToe != None:
+						lTPos = lToe.position
+						rTPos = rToe.position
+						
+						rtPos.z = ((lTPos + rTPos) * 0.5).z
+						
+						if i == 0:
+							RootZOffset = rtPos.z
+							p2rZOffset = pelPos.z
+						
+						# z move amount
+						rtPos.z -= RootZOffset
+						pelPos.z -= rtPos.z
+							
+					# just XY axis root motion
+					else:
+						rtPos.z = 0
+					
+					pelPos.y = 0
+					pelPos.x = 0
+					
+					newRoot.position = rtPos
+			
 					pelvisDum.transform = self.pelvisNode.transform
-					pelvisDum.position = pos
+					pelvisDum.position = pelPos
 	
 			self.pelvisNode.parent = rt.undefined
 
@@ -120,6 +152,8 @@ class formatChangerWindow(QWidget):
 	rangeMin = None
 	rangeMax = None
 	useManualCheckBox = None
+	
+	IncludeRootZCheckBox = None
 	
 	def __init__(self, parent=None):
 		QWidget.__init__(self, parent)
@@ -155,15 +189,17 @@ class formatChangerWindow(QWidget):
 		rangeLayout.addWidget(self.rangeMin)
 		rangeLayout.addWidget(self.rangeMax)
 		
+		self.IncludeRootZCheckBox = QCheckBox("CalcRootZ", self)
+		
 		# button
 		btn_ChangeFormat = QPushButton("&Change", self)
 		btn_ChangeFormat.clicked.connect(self.onExecuteChange)
-		
-		
+				
 		mainLayout.addWidget(self.rootNameLine)
 		mainLayout.addWidget(btn_ChangeFormat)
 		mainLayout.addWidget(self.useManualCheckBox)
 		mainLayout.addWidget(rangeBox)
+		mainLayout.addWidget(self.IncludeRootZCheckBox)
 		
 		self.setLayout(mainLayout)
 
