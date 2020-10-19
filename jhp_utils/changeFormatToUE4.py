@@ -83,8 +83,9 @@ class formatToUE4:
 			lToe = rt.getNodeByName(toeNames[0])
 			rToe = rt.getNodeByName(toeNames[1])
 
-		RootZOffset = 0
+		RootOffset = rt.Point3(0,0,0)
 		p2rZOffset = 0
+		
 		
 		with pymxs.animate(True):
 			for i in range(rt.animationRange.end + 1):
@@ -94,6 +95,10 @@ class formatToUE4:
 					# pelvis dum
 					pelPos = self.pelvisNode.position
 					
+					if i == 0:
+						RootOffset.x = rtPos.x
+						RootOffset.y = rtPos.y
+					
 					if lToe != None and rToe != None:
 						lTPos = lToe.position
 						rTPos = rToe.position
@@ -101,16 +106,20 @@ class formatToUE4:
 						rtPos.z = ((lTPos + rTPos) * 0.5).z
 						
 						if i == 0:
-							RootZOffset = rtPos.z
+							RootOffset.z = rtPos.z
 							p2rZOffset = pelPos.z
 						
 						# z move amount
-						rtPos.z -= RootZOffset
+						rtPos.z -= RootOffset.z
 						pelPos.z -= rtPos.z
 							
 					# just XY axis root motion
 					else:
 						rtPos.z = 0
+					
+					# align to 0,0,0 with offset
+					rtPos.x -= RootOffset.x
+					rtPos.y -= RootOffset.y
 					
 					pelPos.y = 0
 					pelPos.x = 0
