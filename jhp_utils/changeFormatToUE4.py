@@ -12,6 +12,8 @@ QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton, QCheckBox)
 defaultRootNodeName = "Bip001"
 toeNames = ["Bip001 L Toe0", "Bip001 R Toe0"]
 
+weaponBoneNames = ["Weapon_L", "Weapon_R"]
+
 class _GCProtector(object):
     widgets = []
 
@@ -43,6 +45,15 @@ class formatToUE4:
 		
 	# with attime
 	def doChangeJobWithattime(self,changeWindow):
+		# set weaponBones Scale One
+		
+		wpL = rt.getNodeByName(changeWindow.wpLNameLine.text())
+		wpR = rt.getNodeByName(changeWindow.wpRNameLine.text())
+		
+		if wpL != None and wpR != None:
+			wpL.scale = rt.Point3(1,1,1)
+			wpR.scale = rt.Point3(1,1,1)
+		
 		# set animation range again
 		start = 0
 		end = 0
@@ -158,6 +169,8 @@ class formatChangerWindow(QWidget):
 	
 	changer = None
 	rootNameLine = None
+	wpLNameLine = None
+	wpRNameLine = None
 	rangeMin = None
 	rangeMax = None
 	useManualCheckBox = None
@@ -177,7 +190,19 @@ class formatChangerWindow(QWidget):
 		self.rootNameLine = self.lineEditWithFocus(self)
 		self.rootNameLine.setText(defaultRootNodeName)
 		self.rootNameLine.setPlaceholderText("type root node name")
-				
+		
+		wpNameBox = QGroupBox("weaponBoneNames", self)
+		wpLayout = QHBoxLayout(wpNameBox)
+		
+		self.wpLNameLine = self.lineEditWithFocus(self)
+		self.wpLNameLine.setText(weaponBoneNames[0])
+		
+		self.wpRNameLine = self.lineEditWithFocus(self)
+		self.wpRNameLine.setText(weaponBoneNames[1])
+		
+		wpLayout.addWidget(self.wpLNameLine)
+		wpLayout.addWidget(self.wpRNameLine)
+
 		# anim range
 		self.useManualCheckBox = QCheckBox("S&etManual", self)
 		self.useManualCheckBox.stateChanged.connect(self.checkBoxStateChange)
@@ -205,6 +230,8 @@ class formatChangerWindow(QWidget):
 		btn_ChangeFormat.clicked.connect(self.onExecuteChange)
 				
 		mainLayout.addWidget(self.rootNameLine)
+		mainLayout.addWidget(wpNameBox)
+		
 		mainLayout.addWidget(btn_ChangeFormat)
 		mainLayout.addWidget(self.useManualCheckBox)
 		mainLayout.addWidget(rangeBox)
