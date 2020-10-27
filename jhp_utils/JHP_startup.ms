@@ -22,6 +22,7 @@ sFile = (GetDir #scripts) + "\JHP\menuCreate.py"
 if(sFile != undefined) then
 (
 	python.ExecuteFile sFile
+	messageBox "Load JHP-Menu"
 )
 else
 (

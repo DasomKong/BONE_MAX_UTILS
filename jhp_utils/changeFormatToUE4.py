@@ -265,3 +265,5 @@ def openAnimFormatChangeForUE4():
 	changerWindow.show()
 	
 	_GCProtector.widgets.append(changerWindow)
+
+openAnimFormatChangeForUE4()
